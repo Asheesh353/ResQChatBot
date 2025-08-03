@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ResQ - Emergency & Disaster Help</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #bcecf5, #cff0c0);
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #546a9e;
+      font-size: 28px;
+    }
+
+ 
+
+    #chat {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.12);
+      max-width: 750px;
+      margin: 20px auto;
+      height: 440px;
+      overflow-y: auto;
+    }
+
+    .message-wrapper {
+      margin-bottom: 14px;
+    }
+
+    .sender {
+      font-size: 0.75em;
+      font-weight: bold;
+      color: #666;
+      margin: 5px 0 3px 4px;
+    }
+
+    .message {
+      padding: 10px 14px;
+      border-radius: 10px;
+      display: inline-block;
+      max-width: 90%;
+    }
+
+    .user {
+      background-color: #c8e6c9;
+      align-self: flex-end;
+    }
+
+    .bot {
+      background-color: #e3f2fd;
+      align-self: flex-start;
+    }
+
+    #inputArea {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    #input {
+      width: 75%;
+      padding: 12px;
+      border-radius: 30px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    #sendBtn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+
+    #sendBtn:hover {
+      transform: scale(1.1);
+    }
+
+
+body.dark-mode {
+  background: linear-gradient(to right, #185866, #0c4f09);
+  color: #e0e0e0;
+}
+
+.dark-mode #chat {
+  background: #747574;
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .user {
+  background-color: #9dc29d;
+}
+
+.dark-mode .bot {
+  background-color: #6fa3a2;
+}
+
+.dark-mode input,
+.dark-mode #input {
+  background: #444;
+  color: #fff;
+  border: 1px solid #777;
+}
+
+.dark-mode #sendBtn {
+  color: #fff;
+}
+
+#darkModeToggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  background-color: #eee;
+  color: #000;
+  border: none;
+  padding: 12px 14px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#darkModeToggle:hover {
+  background-color: #ddd;
+}
+
+body.dark-mode #darkModeToggle {
+  background-color: #333;
+  color: #fff;
+}
+
+body.dark-mode #darkModeToggle:hover {
+  background-color: #444;
+}
+
+
+  </style>
+</head>
+<body>
+  <h1>🤖 ResQ: Emergency & Disaster Help</h1>
+<div style="text-align: center; margin-bottom: 10px;">
+  <button id="darkModeToggle" title="Toggle Dark Mode">🌓</button>
+
+</div>
+
+  <div id="chat"></div>
+  <div id="inputArea">
+    <input type="text" id="input" placeholder="Ask about a country or emergency...♡" />
+    <button id="sendBtn" onclick="chat()">🛫</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat");
+    const input = document.getElementById("input");
+
+    const responses = {
+      // Example match keywords
+      "hello": "👋 Hello! I'm here to help you with emergency info. Type a country or a disaster (like 'earthquake' or 'India') to get started.",
+      "hi": "👋 Hi there! Need emergency numbers or disaster advice? Just type in a country name or type of emergency.",
+      "help": "💚 I'm here to help however I can. Try typing a country to get emergency contacts, or a disaster type for safety advice. And if this is urgent, please reach out to emergency services near you right away. Stay safe— You matter.💚",
+      "thank you": "🙏 You're most welcome. Stay safe, and remember—you're not alone.",
+      "thank": "🙏 You're most welcome. Stay safe, and remember—you're not alone.",
+      "scared": "💚 It's okay to feel scared. You’re doing the right thing by preparing and staying informed. I'm here for you.",
+      "alone": "🤗 You're not alone. This chatbot is here to support you, anytime you need.",
+      "bye": "👋 Goodbye! Stay safe and take care!",
+      "panic": "🧘 Try to stay calm. Take deep breaths. Focus on what you can control right now. 💚",
+      "lost": "🧭 If you're lost, try to find a landmark or safe place. Call for help. Stay safe.",
+      "tsunami": "🌊 Tsunami:\nMove to higher ground immediately after an earthquake near a coast. Don’t wait for official warnings if you feel strong shaking. Stay away from the shore until cleared by authorities. Carry a go-bag with essentials in coastal zones.",
+      "fire": "🔥 Fire:\nEvacuate immediately if ordered. Use extinguishers only if trained. Stay low to avoid smoke. Close doors behind you when exiting.",
+      "hurricane": "🌪 Hurricane:\nKnow evacuation routes. Bring in outdoor objects. Stay away from windows. Stock up on supplies and meds.",
+      "blizzard": "❄ Blizzard:\nStay indoors and bundle up. Avoid travel. Ventilate well if using gas heater. Keep food, water, and emergency blankets.",
+      "volcano": "🌋 Volcanic Eruption:\nEvacuate if advised. Wear masks and goggles. Stay indoors during ashfall. Avoid low areas.",
+      "flood": "🌧 Flood:\nMove to high ground. Don’t walk or drive in water. Disconnect electricals if safe. Follow alerts.",
+      "earthquake": "🌍 Earthquake:\nDrop, Cover, and Hold. Stay indoors. Avoid windows and heavy furniture. Expect aftershocks.",
+      "sandstorm": "🌫 Sandstorm:\nSeek shelter. Cover nose/mouth. If driving, pull over and turn off lights. Wait it out.",
+      "avalanche": "🧊 Avalanche:\nMove sideways. Drop heavy gear. Swim to stay on surface. Make air pocket and stay calm if buried.",
+      "hail": "🌨 Hailstorm:\nGet inside. Protect your head. Stay away from glass. Cover vehicle if possible.",
+      "landslide": "🪨 Landslide:\nAvoid steep slopes. Listen for cracking or rumbling. Stay alert during rain or quakes.",
+      "drought": "🌾 Drought:\nConserve water. Use drought-resistant crops. Store water. Follow local restrictions.",
+      "famine": "🍞 Famine:\nStore diverse food. Join community farms. Learn food preservation. Connect with aid groups.",
+      "chemical": "🧪 Chemical Spill:\nEvacuate if told. If staying, seal windows/vents. Avoid contact. Follow decontamination instructions.",
+      "power": "💡 Power Outage:\nUse flashlights. Unplug devices. Keep fridge closed. Have spare batteries and backup power.",
+      "pandemic": "🌡 Pandemic:\nFollow hygiene rules. Stay home if sick. Get vaccinated. Sanitize regularly.",
+      "car": "🚗 Car Crash:\nWear your seatbelt – always.\nBrace for impact – sit upright, head against headrest, hands at 9 and 3 on the wheel.\nAfter crash: Turn off the engine, get out if safe, move away from traffic.\nCall emergency services.",
+      "plane": "✈️ Plane Crash:\nKnow your exits – count rows from your seat.\nDuring impact: Brace position – head down, arms over head or knees.\nAfter crash: Exit quickly, leave belongings, move far away from the plane.\nStay alert for fire or smoke.",
+      "ship": "🚢 Shipwreck:\nListen to crew instructions.\nKnow where life jackets and lifeboats are.\nIf abandoning ship: Wear a life jacket, stay calm, jump feet first, hold nose.\nIn water: Stay together, signal for help, conserve energy.",
+      "bleeding": "🩸 **Bleeding**:\n- Apply firm pressure with a clean cloth.\n- Elevate the injured area above heart level.\n- Do NOT remove embedded objects.\n- If bleeding doesn't stop, call emergency services.",
+      "burn": "🔥 **Burn**:\n- Cool the burn under running water for at least 10 minutes.\n- Do NOT apply ice or creams.\n- Cover loosely with a clean cloth.\n- Seek medical help for severe burns.",
+      "choking": "😤 **Choking**:\n- Ask if they can cough or speak.\n- If not, perform 5 back blows between shoulder blades.\n- Then 5 abdominal thrusts (Heimlich maneuver).\n- Call emergency services if needed.",
+      "unconscious": "😴 **Unconscious**:\n- Check for breathing.\n- If not breathing, start CPR (type in CPR to know how).\n- If breathing, place them in the recovery position.\n- Call emergency services immediately.",
+      "cpr": "❤️ **CPR (Cardiopulmonary Resuscitation)**:\n- Push hard and fast in the center of the chest (100–120 compressions per minute).\n- After 30 compressions, give 2 rescue breaths if trained.\n- Continue until help arrives or the person wakes up.",
+      "nosebleed": "👃 **Nosebleed**:\n- Sit upright and lean forward.\n- Pinch the soft part of the nose for 10–15 minutes.\n- Don’t tilt the head back.\n- Seek help if bleeding lasts more than 20 minutes.",
+      "fracture": "🦴 **Fracture**:\n- Immobilize the injured area.\n- Apply a cold pack to reduce swelling.\n- Do NOT try to straighten the limb.\n- Seek medical help immediately.",
+
+
+      "india": "🇮🇳 India:\nPolice: 100\nAmbulance: 102 or 108\nFire: 101\nUnified emergency: 112",
+      "usa": "🇺🇸 USA:\nPolice, Ambulance, Fire: 911",
+      "canada": "🇨🇦 Canada:\nPolice, Ambulance, Fire: 911",
+      "uk": "🇬🇧 UK:\nPolice, Ambulance, Fire: 999 (or 112)",
+      "australia": "🇦🇺 Australia:\nPolice, Ambulance, Fire: 000 (or 112)",
+      "germany": "🇩🇪 Germany:\nPolice: 110\nAmbulance & Fire: 112",
+      "france": "🇫🇷 France:\nPolice: 17\nAmbulance: 15\nFire: 18\nEU: 112",
+      "china": "🇨🇳 China:\nPolice: 110\nAmbulance: 120\nFire: 119\nTraffic: 122",
+      "japan": "🇯🇵 Japan:\nPolice: 110\nAmbulance & Fire: 119",
+      "brazil": "🇧🇷 Brazil:\nPolice: 190\nAmbulance: 192\nFire: 193",
+      "russia": "🇷🇺 Russia:\nPolice: 102\nAmbulance: 103\nFire: 101\nMobile: 112",
+      "southafrica": "🇿🇦 South Africa:\nPolice: 10111\nAmbulance & Fire: 10177\nMobile: 112",
+      "mexico": "🇲🇽 Mexico:\nPolice, Ambulance, Fire: 911",
+      "italy": "🇮🇹 Italy:\nPolice: 112\nAmbulance: 118\nFire: 115",
+      "spain": "🇪🇸 Spain:\nPolice: 091\nAmbulance: 061\nFire: 080",
+      "saudi": "🇸🇦 Saudi Arabia:\nPolice: 999\nAmbulance: 997\nFire: 998",
+      "pakistan": "🇵🇰 Pakistan:\nPolice: 15\nAmbulance: 115 or 1122\nFire: 16",
+      "uae": "🇦🇪 UAE:\nPolice: 999\nAmbulance: 998\nFire: 997\nCoast Guard: 996\nElectricity: 991\nWater: 922\nNon-Emergency: 901",
+      "algeria": "🇩🇿 Algeria: Police 17 / 1548, Ambulance 14, Fire 14",
+      "angola": "🇦🇴 Angola: Police 113, Ambulance 112/116, Fire 115",
+      "benin": "🇧🇯 Benin: Police 117, Ambulance 112, Fire 118",
+      "botswana": "🇧🇼 Botswana: Police 999/911/112, Ambulance 997, Fire 998",
+      "burkina faso": "🇧🇫 Burkina Faso: Police 17, Ambulance 112, Fire 18",
+      "burundi": "🇧🇮 Burundi: Police 117, Ambulance 112, Fire 118",
+      "cape verde": "🇨🇻 Cabo Verde: Police 132, Ambulance 130, Fire 131",
+      "cameroon": "🇨🇲 Cameroon: Police 112/117, Ambulance 112/119, Fire 112/118",
+      "central african republic": "🇨🇫 CAR: Police 117, Ambulance 1220, Fire 118",
+      "chad": "🇹🇩 Chad: Police 17, Ambulance 2251‑4242, Fire 18",
+      "comoros": "🇰🇲 Comoros: Police 17, Ambulance 772‑0373, Fire 18",
+      "congo": "🇨🇬 Republic of Congo: Police 117, Fire 118",
+      "dr congo": "🇨🇩 DR Congo: Police 112, Fire 118",
+      "djibouti": "🇩🇯 Djibouti: Police 17, Ambulance 19, Fire 18",
+      "egypt": "🇪🇬 Egypt: Police 122, Ambulance 123, Fire 180",
+      "equatorial guinea": "🇬🇶 Equatorial Guinea: Police 114, Ambulance 112, Fire 115",
+      "eritrea": "🇪🇷 Eritrea: Police 113, Ambulance 114, Fire 116",
+      "eswatini": "🇸🇿 Eswatini: Police 999, Ambulance 977, Fire 933",
+      "ethiopia": "🇪🇹 Ethiopia: Police 911, Ambulance 907, Fire 939",
+      "gabon": "🇬🇦 Gabon: Police 1730, Ambulance 1300, Fire 18",
+      "gambia": "🇬🇲 Gambia: Police 117, Ambulance 116, Fire 118",
+      "ghana": "🇬🇭 Ghana: All services 112, Ambulance 193, Fire 192",
+      "guinea": "🇬🇳 Guinea: Police 117, Ambulance 18, Fire 442‑020",
+      "guinea bissau": "🇬🇼 Guinea‑Bissau: Police 112, Ambulance 119, Fire 118",
+      "ivory coast": "🇨🇮 Côte d’Ivoire: Police 110/111/170, Ambulance 185, Fire 180",
+      "kenya": "🇰🇪 Kenya: All services 112/999/911",
+      "lesotho": "🇱🇸 Lesotho: Police 123, Ambulance 121, Fire 122",
+      "liberia": "🇱🇷 Liberia: All services 911",
+      "libya": "🇱🇾 Libya: Police 1515, Ambulance/Fire vary",
+      "madagascar": "🇲🇬 Madagascar: Police 117, Ambulance 124, Fire 118",
+      "albania": "🇦🇱 Albania:\nPolice: 129\nAmbulance: 127\nFire: 128",
+      "antigua and barbuda": "🇦🇬 Antigua and Barbuda:\nAll services: 911",
+      "argentina": "🇦🇷 Argentina:\nPolice: 911\nAmbulance: 107\nFire: 100",
+      "austria": "🇦🇹 Austria:\nPolice: 133\nAmbulance: 144\nFire: 122\nEU: 112",
+      "belarus": "🇧🇾 Belarus:\nPolice: 102\nAmbulance: 103\nFire: 101",
+      "belgium": "🇧🇪 Belgium:\nPolice: 101\nAmbulance & Fire: 112",
+      "belize": "🇧🇿 Belize:\nPolice: 911\nAmbulance: 90\nFire: 90",
+      "bolivia": "🇧🇴 Bolivia:\nPolice: 110\nAmbulance: 118\nFire: 119",
+      "bosnia and herzegovina": "🇧🇦 Bosnia and Herzegovina:\nPolice: 122\nAmbulance: 124\nFire: 123",
+      "bulgaria": "🇧🇬 Bulgaria:\nPolice: 166\nAmbulance: 150\nFire: 160\nEU: 112",
+      "chile": "🇨🇱 Chile:\nPolice: 133\nAmbulance: 131\nFire: 132",
+      "colombia": "🇨🇴 Colombia:\nPolice: 123\nAmbulance: 125\nFire: 119",
+      "croatia": "🇭🇷 Croatia:\nPolice: 192\nAmbulance: 194\nFire: 193\nEU: 112",
+      "cuba": "🇨🇺 Cuba:\nPolice: 106\nAmbulance: 104\nFire: 105",
+      "cyprus": "🇨🇾 Cyprus:\nPolice: 199 or 112\nAmbulance: 199 or 112\nFire: 199 or 112",
+      "czech republic": "🇨🇿 Czech Republic:\nPolice: 158\nAmbulance: 155\nFire: 150\nEU: 112",
+      "denmark": "🇩🇰 Denmark:\nAll services: 112",
+      "dominica": "🇩🇲 Dominica:\nPolice: 999\nAmbulance: 999\nFire: 999",
+      "ecuador": "🇪🇨 Ecuador:\nPolice, Ambulance, Fire: 911",
+      "estonia": "🇪🇪 Estonia:\nPolice, Ambulance, Fire: 112",
+      "malawi": "🇲🇼 Malawi: Police 997, Ambulance 998, Fire 999",
+      "mali": "🇲🇱 Mali: Police 17, Ambulance 15, Fire 18",
+      "mauritania": "🇲🇷 Mauritania: Police 117, Ambulance/Fire 118",
+      "mauritius": "🇲🇺 Mauritius: Police 999/112, Ambulance 114, Fire 115",
+      "morocco": "🇲🇦 Morocco: Police 19, Ambulance/Fire 15",
+      "mozambique": "🇲🇿 Mozambique: Police 119, Ambulance 117, Fire 198",
+      "namibia": "🇳🇦 Namibia: Police 10111, Ambulance/Fire 112",
+      "niger": "🇳🇪 Niger: Police 17, Ambulance/Fire 18",
+      "nigeria": "🇳🇬 Nigeria: Police 112/199, Ambulance/Fire vary",
+      "rwanda": "🇷🇼 Rwanda: Police 112, Ambulance 912, Fire 111",
+      "sao tome": "🇸🇹 São Tomé & Príncipe: Police 112, Ambulance 115, Fire 116",
+      "senegal": "🇸🇳 Senegal: Police 17, Ambulance/Fire 18",
+      "seychelles": "🇸🇨 Seychelles: Police/Fire 999, Ambulance 151",
+      "sierra leone": "🇸🇱 Sierra Leone: Police 112, Ambulance 117, Fire 119",
+      "somalia": "🇸🇴 Somalia: Police 888, other services vary",
+      "south sudan": "🇸🇸 South Sudan: Police 777, others vary",
+      "sudan": "🇸🇩 Sudan: Police 999, Ambulance 333, Fire 555",
+      "tanzania": "🇹🇿 Tanzania: Police 112/999, Ambulance/Fire 114",
+      "togo": "🇹🇬 Togo: Police 117, Ambulance 8200, Fire 118",
+      "tunisia": "🇹🇳 Tunisia: Police 197, Ambulance 190, Fire 198",
+      "uganda": "🇺🇬 Uganda: Police 112/999, Ambulance 912, Fire 112",
+      "zambia": "🇿🇲 Zambia: Police 991, Ambulance 992, Fire 993",
+      "zimbabwe": "🇿🇼 Zimbabwe: Police 995, Ambulance 994, Fire 993",
+      "new zealand": "🇳🇿 New Zealand: 111 (all services)",
+      "papua new guinea": "🇵🇬 PNG: Police 112, other services vary",
+      "vanuatu": "🇻🇺 Vanuatu: Police 111, Ambulance 112, Fire 113",
+      "solomon islands": "🇸🇧 Solomons: 999 (other services vary)",
+      "samoa": "🇼🇸 Samoa: All services 999",
+      "tonga": "🇹🇴 Tonga: Police 922, Ambulance/Fire 933",
+      "micronesia": "🇫🇲 Micronesia: 911",
+      "marshall islands": "🇲🇭 Marshall Islands: 625‑3233",
+      "palau": "🇵🇼 Palau: Police 911, Ambulance 488‑2558, Fire 488‑1122",
+      "timor-leste": "🇹🇱 Timor: Police 112, Ambulance 110, Fire 115",
+      "andorra": "🇦🇩 Andorra: Police 110, Ambulance/Fire 118",
+      "monaco": "🇲🇨 Monaco: Police 17, Ambulance 15, Fire 18",
+      "liechtenstein": "🇱🇮 Liechtenstein: 112",
+      "luxembourg": "🇱🇺 Luxembourg: Police 113, Ambulance/Fire 112",
+      "iceland": "🇮🇸 Iceland: 112",
+      "gibraltar": "🇬🇮 Gibraltar: 112 or 199",
+      "greenland": "🇬🇱 Greenland: 112",
+      "faroe islands": "🇫🇴 Faroe Islands: 112",
+      "bermuda": "🇧🇲 Bermuda: 911",
+      "puerto rico": "🇵🇷 Puerto Rico: 911",
+      "guam": "🇬🇺 Guam: 911",
+      "us virgin islands": "🇻🇮 USVI: 911",
+      "cook islands": "🇨🇰 Cook Islands: 999",
+      "niue": "🇳🇺 Niue: local emergency services",
+      "new caledonia": "🇳🇨 New Caledonia (FR): 17, 15, 18",
+      "french polynesia": "🇵🇫 French Polynesia: 17, 15, 18",
+      "martinique": "🇲🇶 Martinique (FR): 17, 15, 18",
+      "reunion": "🇷🇪 Réunion (FR): 17, 15, 18",
+      "guadeloupe": "🇬🇵 Guadeloupe (FR): 17, 15, 18",
+      "french guiana": "🇬🇫 French Guiana: 17, 15, 18",
+      "ireland": "🇮🇪 Ireland: Police, Ambulance & Fire: 112 or 999", 
+      "dominican republic": "🇩🇴 Dominican Republic: All services: 911 or 112", 
+      "haiti": "🇭🇹 Haiti: Police: 114, Ambulance: 116, Fire: 115", 
+      "jamaica": "🇯🇲 Jamaica: Police & Medical: 110, Firefighters: 119", 
+      "nicaragua": "🇳🇮 Nicaragua: Police: 118, Ambulance: 128, Fire: 115", 
+      "costa rica": "🇨🇷 Costa Rica: All services: 911 or 112", 
+      "el salvador": "🇸🇻 El Salvador: All services: 911", 
+      "paraguay": "🇵🇾 Paraguay: All services: 911", 
+      "uruguay": "🇺🇾 Uruguay: All services: 911", 
+      "barbados": "🇧🇧 Barbados: Police: 211, Medical: 511", 
+      "bahamas": "🇧🇸 Bahamas: All services: 911 or 919", 
+      "grenada": "🇬🇩 Grenada: All services: 911 or 999",
+      "yemen": "🇾🇪 Yemen: Police 194, Ambulance & Fire services vary by region",
+      "afghanistan": "🇦🇫 Afghanistan: Police 119, other emergency services vary",
+      "iran": "🇮🇷 Iran: Police 110, Ambulance 115, Fire 125",
+      "iraq": "🇮🇶 Iraq: Police 104, Ambulance 122, Fire 115",
+      "syria": "🇸🇾 Syria: Police 112, Ambulance 110, Fire 113",
+      "lebanon": "🇱🇧 Lebanon: Police 112, Red Cross 140, Fire 175",
+      "jordan": "🇯🇴 Jordan: All services 911",
+      "palestine": "🇵🇸 Palestine: Police 100, Ambulance 101, Fire 102",
+      "qatar": "🇶🇦 Qatar: Police, Ambulance, Fire 999",
+      "kuwait": "🇰🇼 Kuwait: Police, Ambulance, Fire 112",
+      "bahrain": "🇧🇭 Bahrain: Police, Ambulance, Fire 999",
+      "oman": "🇴🇲 Oman: Police, Ambulance, Fire 9999",
+      "azerbaijan": "🇦🇿 Azerbaijan: Police 102, Ambulance 103, Fire 101",
+      "georgia": "🇬🇪 Georgia: All services 112",
+      "armenia": "🇦🇲 Armenia: Police 102, Ambulance 103, Fire 101",
+      "kazakhstan": "🇰🇿 Kazakhstan: Police 102, Ambulance 103, Fire 101",
+      "uzbekistan": "🇺🇿 Uzbekistan: Police 102, Ambulance 103, Fire 101",
+      "turkmenistan": "🇹🇲 Turkmenistan: Police 102, Ambulance 103, Fire 101",
+      "kyrgyzstan": "🇰🇬 Kyrgyzstan: Police 102, Ambulance 103, Fire 101",
+      "tajikistan": "🇹🇯 Tajikistan: Police 102, Ambulance 103, Fire 101",
+      "mongolia": "🇲🇳 Mongolia: Police 102, Ambulance 103, Fire 101",
+      "nepal": "🇳🇵 Nepal: Police 100, Ambulance 102, Fire 101",
+      "bhutan": "🇧🇹 Bhutan: Police 113, Ambulance 112, Fire 110",
+      "maldives": "🇲🇻 Maldives: Police 119, Ambulance 102, Fire 118",
+      "sri lanka": "🇱🇰 Sri Lanka: Police 119, Ambulance 1990, Fire 110",
+      "bangladesh": "🇧🇩 Bangladesh: Police 999 or 100, Ambulance 199, Fire 199",
+      "north korea": "🇰🇵 North Korea: Emergency services not publicly listed",
+      "south korea": "🇰🇷 South Korea: All services 119",
+      "vietnam": "🇻🇳 Vietnam: Police 113, Ambulance 115, Fire 114",
+      "laos": "🇱🇦 Laos: Police 1191, Ambulance/Fire vary by province",
+      "cambodia": "🇰🇭 Cambodia: Police 117, Ambulance 119, Fire 118",
+      "thailand": "🇹🇭 Thailand: Police 191, Ambulance 1669, Fire 199",
+      "myanmar": "🇲🇲 Myanmar: Police 199, other services vary regionally",
+      "indonesia": "🇮🇩 Indonesia: Police 110, Ambulance 118/119, Fire 113",
+      "philippines": "🇵🇭 Philippines: Police 117 or 911, Ambulance/Fire 911",
+      "malaysia": "🇲🇾 Malaysia: All services 999 or 112 (mobile)",
+      "singapore": "🇸🇬 Singapore: All services 995 (ambulance/fire), Police 999",
+      "brunei": "🇧🇳 Brunei: All services 993 (police), 991 (ambulance/fire)",
+      "east timor": "🇹🇱 Timor-Leste: Police 112, Ambulance 110, Fire 115",
+      "fiji": "🇫🇯 Fiji:\nPolice: 917\nAmbulance: 910\nFire: 911",
+      "finland": "🇫🇮 Finland:\nAll services: 112",
+      "guatemala": "🇬🇹 Guatemala:\nPolice: 110\nAmbulance: 128\nFire: 122",
+      "honduras": "🇭🇳 Honduras:\nPolice: 911\nAmbulance: 195\nFire: 198",
+      "hong kong": "🇭🇰 Hong Kong:\nAll services: 999",
+      "hungary": "🇭🇺 Hungary:\nPolice: 107\nAmbulance: 104\nFire: 105\nEU: 112",
+      "iceland": "🇮🇸 Iceland:\nAll services: 112",
+      "israel": "🇮🇱 Israel:\nPolice: 100\nAmbulance: 101\nFire: 102",
+      "kazakhstan": "🇰🇿 Kazakhstan:\nPolice: 102\nAmbulance: 103\nFire: 101",
+      "latvia": "🇱🇻 Latvia:\nAll services: 112",
+      "lithuania": "🇱🇹 Lithuania:\nAll services: 112",
+      "macedonia": "🇲🇰 North Macedonia:\nPolice: 192\nAmbulance: 194\nFire: 193",
+      "moldova": "🇲🇩 Moldova:\nPolice: 902\nAmbulance: 903\nFire: 901",
+      "montenegro": "🇲🇪 Montenegro:\nPolice: 122\nAmbulance: 124\nFire: 123",
+      "morocco": "🇲🇦 Morocco:\nPolice: 19\nAmbulance/Fire: 15",
+      "netherlands": "🇳🇱 Netherlands:\nAll services: 112",
+      "norway": "🇳🇴 Norway:\nPolice: 112\nAmbulance: 113\nFire: 110",
+      "panama": "🇵🇦 Panama:\nPolice: 104\nAmbulance: 911\nFire: 103",
+      "peru": "🇵🇪 Peru:\nPolice: 105\nAmbulance: 106\nFire: 116",
+      "poland": "🇵🇱 Poland:\nPolice: 997\nAmbulance: 999\nFire: 998\nEU: 112",
+      "portugal": "🇵🇹 Portugal:\nAll services: 112",
+      "romania": "🇷🇴 Romania:\nAll services: 112",
+      "serbia": "🇷🇸 Serbia:\nPolice: 192\nAmbulance: 194\nFire: 193",
+      "slovakia": "🇸🇰 Slovakia:\nAll services: 112",
+      "slovenia": "🇸🇮 Slovenia:\nPolice: 113\nAmbulance & Fire: 112",
+      "sweden": "🇸🇪 Sweden:\nAll services: 112",
+      "switzerland": "🇨🇭 Switzerland:\nPolice: 117\nAmbulance: 144\nFire: 118\nEU: 112",
+      "taiwan": "🇹🇼 Taiwan:\nPolice: 110\nAmbulance & Fire: 119",
+      "turkey": "🇹🇷 Turkey:\nPolice: 155\nAmbulance: 112\nFire: 110",
+      "ukraine": "🇺🇦 Ukraine:\nPolice: 102\nAmbulance: 103\nFire: 101",
+      "vatican": "🇻🇦 Vatican City:\nUses Rome’s services: 112, 113, 118",
+      "venezuela": "🇻🇪 Venezuela:\nPolice: 171\nAmbulance & Fire: 911",
+      "albania": "🇦🇱 Albania:\nPolice: 129\nAmbulance: 127\nFire: 128",
+      "bosnia and herzegovina": "🇧🇦 Bosnia & Herzegovina:\nPolice: 122\nAmbulance: 124\nFire: 123",
+      "croatia": "🇭🇷 Croatia:\nAll services: 112",
+      "czech republic": "🇨🇿 Czech Republic:\nPolice: 158\nAmbulance: 155\nFire: 150\nEU: 112",
+      "estonia": "🇪🇪 Estonia:\nAll services: 112",
+      "greece": "🇬🇷 Greece:\nPolice: 100\nAmbulance: 166\nFire: 199\nEU: 112",
+      "bulgaria": "🇧🇬 Bulgaria:\nAll services: 112",
+      "tokelau": "🇹🇰 Tokelau (NZ): No dedicated emergency numbers. Use satellite communication; support is coordinated through New Zealand.",
+      "pitcairn islands": "🇵🇳 Pitcairn Islands (UK): No emergency services; contact the island's mayor or NZ authorities via satellite.",
+      "south georgia and south sandwich islands": "🇬🇸 SGSSI (UK): Uninhabited (except research); emergency support via British military/naval channels.",
+      "british indian ocean territory": "🇮🇴 BIOT: No civilian population; emergency handled by UK/US military.",
+      "tristan da cunha": "🇸🇭 Tristan da Cunha (UK): Use local island council contact; no dedicated emergency services.",
+      "ascension island": "🇦🇨 Ascension (UK): Local police/fire services. Call police station directly via island telecom.",
+      "bouvet island": "🇧🇻 Bouvet Island (Norway): Uninhabited. No emergency infrastructure.",
+      "heard island and mcdonald islands": "🇭🇲 Heard & McDonald Islands (Australia): Uninhabited; emergencies are handled by Australian authorities.",
+      "antarctica": "🇦🇶 Antarctica: No sovereign state. Emergencies managed by research station country (e.g. US, Russia, Australia). Use radio/satellite.",
+      "saint pierre and miquelon": "🇵🇲 Saint Pierre & Miquelon: 17, 15, 18"
+    }; 
+
+       function appendMessage(sender, message, isUser) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message-wrapper";
+
+      const senderTag = document.createElement("div");
+      senderTag.className = "sender";
+      senderTag.innerText = sender;
+
+      const messageDiv = document.createElement("div");
+      messageDiv.className = `message ${isUser ? "user" : "bot"}`;
+      messageDiv.innerText = message;
+
+      wrapper.appendChild(senderTag);
+      wrapper.appendChild(messageDiv);
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function chat() {
+      const userText = input.value.trim().toLowerCase();
+      if (!userText) return;
+
+      appendMessage("You", input.value, true);
+
+      let response = "🤔 I'm not sure about that. Try a country name or type of disaster.";
+      for (let key in responses) {
+        const pattern = new RegExp(`\\b${key}\\b`, 'i');
+        if (pattern.test(userText)) {
+          response = responses[key];
+          break;
+        }
+      }
+
+
+      setTimeout(() => {
+        appendMessage("ResQ 🤖", response, false);
+      }, 200);
+
+      input.value = "";
+    }
+
+    // Allow Enter key to send
+    input.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") chat();
+    });
+
+  // Dark Mode Toggle
+document.getElementById("darkModeToggle").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+});
+
+  </script>
+</body>
+</html>
